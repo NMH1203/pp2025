@@ -20,8 +20,8 @@ class Student:
     def dod(self):
         return self._dod
     
-    def add_mark(self, course: str, score: int):
-        self._mark.append((course, score))
+    def add_mark(self, course: str, score: int, credits):
+        self._mark.append((course, score, credits))
     
     def __str__(self):
         if self._mark:
@@ -32,10 +32,11 @@ class Student:
     
 
 class Course:
-    def __init__(self, cid: int, name: str):
+    def __init__(self, cid: int, name: str, credit: int):
         self._id=cid
         self._name= name
         self._mark = []
+        self._credits = credit
     
     @property
     def id(self):
@@ -45,6 +46,10 @@ class Course:
     def name(self):
         return self._name
     
+    @property
+    def credit(self):
+        return self._credits 
+
     def add_mark(self, student_name: str, score: str):
         self._mark.append((student_name, score))
     
@@ -162,11 +167,6 @@ def main():
                 break
             case _:
                 print("invalid action")
-
-
-
-
-
 
 if __name__ == '__main__':
     main()
