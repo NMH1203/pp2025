@@ -6,6 +6,7 @@ class Student:
         self._id = sid
         self._name= name
         self._dod= dod
+        self._mark= []
     
     @property
     def id(self):
@@ -19,8 +20,15 @@ class Student:
     def dod(self):
         return self._dod
     
+    def add_mark(self, course: str, score: int):
+        self._mark.append((course, score))
+    
     def __str__(self):
-        return f"('{self.id}', '{self.name}', '{self.dod}')"
+        if self._mark:
+            return f"({self._id}. '{self._name}', '{self._dod}', '{self._mark}')"
+        else: 
+            return f"({self._id}. '{self._name}', '{self._dod}')"
+        
     
 
 class Course:
@@ -84,12 +92,32 @@ class Markmanager:
         for student in self._student:
             score = math.floor(float(input(f'Type the mark for {student.name}: ')))
             course.add_mark(student.name, score)
+            student.add_mark(course.name, score)
         print('\nStudent mark list:',course.mark())
-    
+
+    def find_student(self,id:int):
+        for astudent in self._student:
+            if(id==astudent.id):
+                return astudent
+        return None
+
+    def calculate_GPA(self):
+        sID=int(input("write the ID of student you want to calculate GPA: "))
+        student=self.find_student(sID)
+        if student is None:
+            print(f"student with ID {sID} not found")
+            return
+        scores=[score for (_course, score) in student._mark]
+        if not scores:
+            print("no mark available for this student")
+            return
+        gpa = float(np.average(scores))
+        print(f"Student {student.name} (ID {student.id}) GPA: {gpa:.2f}")
+
     def show_student(self):
-        print('\n Student information: ')
-        for s in self._student:
-            print(f' {s}')
+            print('\n Student information: ')
+            for s in self._student:
+                print(f' {s}')
     
     def show_course(self):
         print('\nList of course information: ')
@@ -103,8 +131,10 @@ class Markmanager:
         print("3 input input mark of the course")
         print("4: show students")
         print("5: show courses")
-        print("6: help")
-        print("7: exit")
+        print("6: calculate student GPA ")
+        print("7: help")
+        print("8: exit")
+
 
 def main():
     mm = Markmanager()
@@ -124,20 +154,16 @@ def main():
                 mm.show_student()
             case "5":
                 mm.show_course()
-            case "6" | "help":
+            case "6" :
+                mm.calculate_GPA()
+            case "7" | "help":
                 mm.help()
-            case "7":
+            case "8":
                 break
             case _:
                 print("invalid action")
-            
 
 
-                
-
-    # mm.input_marks_for_course()
-    # mm.show_student()
-    # mm.show_course()
 
 
 
