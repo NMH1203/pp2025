@@ -54,9 +54,10 @@ class Course:
     def credit(self):
         return self._credits 
 
-    def add_mark(self, student_name: str, score: str, credit: int):
-        self._mark.append((student_name, score, credit))
-    
+    def add_mark(self, student_name: str, score: str):
+        self._mark.append((student_name, score))
+
+    @property
     def mark(self):
         return self._mark
     
@@ -74,9 +75,9 @@ class Markmanager:
     def input_student(self):
         n= int(input("Type in the number of student: "))
         for i in range (1, n+1):
-            sid= int(input(f'ID student {i}'))
-            name=input (f'Name student {i}') 
-            dob= input(f'Dob student {i}')
+            sid= int(input(f'ID student {i}: '))
+            name=input (f'Name student {i}: ') 
+            dob= input(f'Dob student {i}: ')
             self._student.append(Student(sid, name, dob))
 
     def input_courses(self):
@@ -96,14 +97,16 @@ class Markmanager:
     def input_marks_for_course(self):
         cid = int(input("Type the id of the course to write mark: "))
         course = self.find_course(cid)
+
         if not course:
             print(f'course with id {cid} not found')
             return 
+        
         for student in self._student:
             score = math.floor(float(input(f'Type the mark for {student.name}: ')))
             course.add_mark(student.name, score)
             student.add_mark(course.name, score, course.credit)
-        print('\nStudent mark list:',course.mark())
+        print('\nStudent mark list:',course.mark)
 
     def find_student(self,id:int):
         for astudent in self._student:
@@ -111,21 +114,43 @@ class Markmanager:
                 return astudent
         return None
 
+    def GPA(self, scores: list, credit: list):
+        np_scores = np.array(scores, dtype=float)
+        np_credits = np.array(credit, dtype=float)
+        if np_scores.size == 0 or np_credits.size == 0:
+            return 0.0
+        gpa = float(np.average(np_scores, weights=np_credits))
+        return gpa
+
     def calculate_GPA(self):
         sID=int(input("write the ID of student you want to calculate GPA: "))
         student=self.find_student(sID)
+
         if student is None:
             print(f"student with ID {sID} not found")
             return
-        scores=[score for [_course, score, credit] in student.mark]
-        credits=[credit for [_course, score, credit] in student.mark]
+        marks = student.mark
+        scores = [score for [_course, score, credit] in marks]
+        credits = [credit for [_course, score, credit] in marks]
+
         if not scores:
             print("no mark available for this student")
             return
-        np_scores=np.array(scores)
-        np_credits=np.array(credits)
-        gpa = float(np.average(np_scores,weights= np_credits))
+
+        gpa = self.GPA(scores, credits)
         print(f"Student {student.name} (ID {student.id}) GPA: {gpa:.2f}")
+
+    def show_list_GPA(self):
+        for astudent in self._student:
+            marks = astudent.mark
+            scores = [score for [_course, score, credit] in marks]
+            credits = [credit for [_course, score, credit] in marks]
+            if not scores:
+                print(f"Student {astudent.name} (ID {astudent.id}) GPA: N/A (no marks)\n")
+                continue
+            gpa = self.GPA(scores, credits)
+            print(f"Student {astudent.name} (ID {astudent.id}) GPA: {gpa:.2f} \n")
+
 
     def show_student(self):
             print('\n Student information: ')
@@ -140,13 +165,14 @@ class Markmanager:
     def help(self):
         print("--help--")
         print("1: input student")
-        print("2 input course")
-        print("3 input input mark of the course")
+        print("2: input course")
+        print("3: input mark of the course")
         print("4: show students")
         print("5: show courses")
         print("6: calculate student GPA ")
-        print("7: help")
-        print("8: exit")
+        print("7: calculate student GPA ")
+        print("8: help")
+        print("9: exit")
 
 
 def main():
@@ -169,14 +195,16 @@ def main():
                 mm.show_course()
             case "6" :
                 mm.calculate_GPA()
-            case "7" | "help":
+            case "7" :
+                mm.show_list_GPA()
+            case "8"| "help":
                 mm.help()
-            case "8":
+            case "9":
                 break
             case _:
                 print("invalid action")
+                break
 
 if __name__ == '__main__':
     main()
 
-    
