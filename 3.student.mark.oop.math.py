@@ -20,6 +20,10 @@ class Student:
     def dod(self):
         return self._dod
     
+    @property
+    def mark(self):
+        return self._mark
+    
     def add_mark(self, course: str, score: int, credits):
         self._mark.append((course, score, credits))
     
@@ -50,8 +54,8 @@ class Course:
     def credit(self):
         return self._credits 
 
-    def add_mark(self, student_name: str, score: str):
-        self._mark.append((student_name, score))
+    def add_mark(self, student_name: str, score: str, credit: int):
+        self._mark.append((student_name, score, credit))
     
     def mark(self):
         return self._mark
@@ -80,7 +84,8 @@ class Markmanager:
         for i in range(1, n + 1):
             cid = int(input(f'ID course {i}: '))
             name = input(f'Name course {i}: ')
-            self._courses.append(Course(cid, name))
+            credit=int(input(f'Credit of course {i}: '))
+            self._courses.append(Course(cid, name, credit))
 
     def find_course(self, id:int):
         for course in self._courses:
@@ -97,7 +102,7 @@ class Markmanager:
         for student in self._student:
             score = math.floor(float(input(f'Type the mark for {student.name}: ')))
             course.add_mark(student.name, score)
-            student.add_mark(course.name, score)
+            student.add_mark(course.name, score, course.credit)
         print('\nStudent mark list:',course.mark())
 
     def find_student(self,id:int):
@@ -112,11 +117,14 @@ class Markmanager:
         if student is None:
             print(f"student with ID {sID} not found")
             return
-        scores=[score for (_course, score) in student._mark]
+        scores=[score for [_course, score, credit] in student.mark]
+        credits=[credit for [_course, score, credit] in student.mark]
         if not scores:
             print("no mark available for this student")
             return
-        gpa = float(np.average(scores))
+        np_scores=np.array(scores)
+        np_credits=np.array(credits)
+        gpa = float(np.average(np_scores,weights= np_credits))
         print(f"Student {student.name} (ID {student.id}) GPA: {gpa:.2f}")
 
     def show_student(self):
