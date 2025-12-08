@@ -1,6 +1,7 @@
 import math 
 import numpy as np
-
+import curses
+from curses import wrapper
 class Student:
     def __init__(self, sid: int , name: str, dod: str):
         self._id = sid
@@ -72,41 +73,74 @@ class Markmanager:
         self._student= []
         self._courses= []
 
-    def input_student(self):
-        n= int(input("Type in the number of student: "))
+    def input_student(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr(0,0,"--input student--")
+
+        n_str = get_input(stdscr, 2, 0,"Type in the number of student: ")
+        n= int(n_str)
         for i in range (1, n+1):
-            sid= int(input(f'ID student {i}: '))
-            name=input (f'Name student {i}: ') 
-            dob= input(f'Dob student {i}: ')
+            stdscr.clear()
+            stdscr.addstr(0, 0, f"--- Student {i}/{n} ---")
+
+            sid_str = get_input(stdscr,2,0,f'ID student {i}: ')
+            sid= int(sid_str)
+
+            name = get_input(stdscr, 3, 0, f'Name student {i}: ')
+            
+            dob= get_input(stdscr, 4, 0, f'DoB student {i}: ')
+
             self._student.append(Student(sid, name, dob))
 
-    def input_courses(self):
-        n = int(input('Type in the number course: '))
+    def input_courses(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr(0,0,"--input course--")
+
+        n_str = get_input(stdscr, 2, 0,"Type in the number of Course: ")
+        n = int(n_str)
+
         for i in range(1, n + 1):
-            cid = int(input(f'ID course {i}: '))
-            name = input(f'Name course {i}: ')
-            credit=int(input(f'Credit of course {i}: '))
+            stdscr.clear()
+            stdscr.addstr(0, 0, f"--- Course {i}/{n} ---")
+
+            cid_str = get_input(stdscr,2,0,f'ID course {i}: ')
+            cid = int(cid_str)
+
+            name = get_input(stdscr, 3, 0, f'Name course {i}: ')
+
+            credit=get_input(stdscr, 4, 0, f'Credit course {i}: ')
+
             self._courses.append(Course(cid, name, credit))
+    
+    def input_marks_for_course(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr(0,0,"--input mark for course--")
+        
+        cid_str = get_input(stdscr,2,0,f'Type the id of the course to write mark:  ')
+        cid = int(cid_str)
+
+        course = self.find_course(cid)
+
+        if not course:
+            show_message_box(stdscr, "ERROR", [f'Course with ID {cid} not found'])
+            return 
+        count=0
+        for student in self._student:
+            stdscr.clear()
+            stdscr.addstr(0, 0, f"--- Student {student.name} with {student.id}:  ---")
+
+            score_str = get_input(stdscr, 2, 0 , f'Mark: ')
+            score = math.floor(float(score_str))
+
+            course.add_mark(student.name, score)
+            student.add_mark(course.name, score, course.credit)
+            count+=1
 
     def find_course(self, id:int):
         for course in self._courses:
             if(course.id == id):
                 return course
         return None
-    
-    def input_marks_for_course(self):
-        cid = int(input("Type the id of the course to write mark: "))
-        course = self.find_course(cid)
-
-        if not course:
-            print(f'course with id {cid} not found')
-            return 
-        
-        for student in self._student:
-            score = math.floor(float(input(f'Type the mark for {student.name}: ')))
-            course.add_mark(student.name, score)
-            student.add_mark(course.name, score, course.credit)
-        print('\nStudent mark list:',course.mark)
 
     def find_student(self,id:int):
         for astudent in self._student:
@@ -117,94 +151,177 @@ class Markmanager:
     def GPA(self, scores: list, credit: list):
         np_scores = np.array(scores, dtype=float)
         np_credits = np.array(credit, dtype=float)
+
         if np_scores.size == 0 or np_credits.size == 0:
             return 0.0
+        
         gpa = float(np.average(np_scores, weights=np_credits))
+
         return gpa
 
-    def calculate_GPA(self):
-        sID=int(input("write the ID of student you want to calculate GPA: "))
+    def calculate_GPA(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr(stdscr, 0, 0, "--clculate GPA of student--" )
+
+        sID_str = get_input(stdscr, 2, 0, f'ID student to calculate: ')
+        sID=int(sID_str)
+
         student=self.find_student(sID)
 
         if student is None:
-            print(f"student with ID {sID} not found")
+            stdscr.addstr(stdscr, 3, 0,f"student with ID {sID} not found")
             return
+        
         marks = student.mark
         scores = [score for [_course, score, credit] in marks]
         credits = [credit for [_course, score, credit] in marks]
 
         if not scores:
-            print("no mark available for this student")
+            stdscr.addstr(stdscr, 3, 0,f"No mark available for student {sID}")
             return
 
         gpa = self.GPA(scores, credits)
-        print(f"Student {student.name} (ID {student.id}) GPA: {gpa:.2f}")
 
-    def show_list_GPA(self):
+        show_message_box(stdscr, "RESULT", [f"Student: {student.name}", f"ID: {student.id}", f"GPA: {gpa:.2f}"])
+
+    def show_list_GPA(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr(stdscr, 0, 0, "--List GPA--" )
+        
+        line=[]
+
         for astudent in self._student:
             marks = astudent.mark
+
             scores = [score for [_course, score, credit] in marks]
             credits = [credit for [_course, score, credit] in marks]
+
             if not scores:
-                print(f"Student {astudent.name} (ID {astudent.id}) GPA: N/A (no marks)\n")
+                line.append(f"Student {astudent.name} (ID {astudent.id}): N/A (no marks)")
                 continue
+
             gpa = self.GPA(scores, credits)
-            print(f"Student {astudent.name} (ID {astudent.id}) GPA: {gpa:.2f} \n")
+            line.append(f"Student {astudent.name} (ID {astudent.id}) - GPA: {gpa:.2f}")
+
+            show_message_box(stdscr, "CLASS GPA LIST", line)
 
 
-    def show_student(self):
-            print('\n Student information: ')
+    def show_student(self, stdscr):
+            line = []
             for s in self._student:
-                print(f' {s}')
+                line.append(str(s))
+            show_message_box(stdscr, "LIST OF STUDENTS", line)
     
-    def show_course(self):
-        print('\nList of course information: ')
+    def show_course(self, stdscr):
+        line = []
         for c in self._courses:
-            print(f' {c}')
+            line.append(str(c))
 
-    def help(self):
-        print("--help--")
-        print("1: input student")
-        print("2: input course")
-        print("3: input mark of the course")
-        print("4: show students")
-        print("5: show courses")
-        print("6: calculate student GPA ")
-        print("7: calculate student GPA ")
-        print("8: help")
-        print("9: exit")
+        show_message_box(stdscr, "LIST OF COURSES", line)
 
 
-def main():
+def print_menu(stdscr, selected_row_idx, menu_items):
+    stdscr.clear()
+    h, w = stdscr.getmaxyx()
+
+    for idx, row in enumerate(menu_items):
+        x=w//2 - len(row)//2
+        y=h//2 - len (menu_items)//2 + idx
+
+        if idx == selected_row_idx:
+            stdscr.attron(curses.A_REVERSE)
+            stdscr.addstr(y,x , row)
+            stdscr.attroff(curses.A_REVERSE)
+        else:
+            stdscr.addstr(y, x, row)
+    stdscr.refresh()
+
+def get_input(stdscr, y, x, prompt):
+    curses.echo()
+    stdscr.addstr(y, x, prompt)
+    stdscr.refresh()
+
+    input_bytes= stdscr.getstr(y, x, +len(prompt))
+    return input_bytes.decode('utf-8')
+
+def show_message_box (stdscr, title, lines):
+    stdscr.clear()
+    h, w = stdscr.getmaxyx()
+
+    stdscr.attron(curses.A_BOLD)
+    stdscr.addstr(0, 0, f"---{title}---")
+    stdscr.attron(curses.A_BOLD)
+
+    for i, line in enumerate(lines):
+        if i+2 <h:
+            stdscr.addstr(i+2, 0, str(line))
+    
+    msg = "Press any key to return"
+    stdscr.addstr(h-2, 0, msg, curses.A_REVERSE)
+    stdscr.refresh()
+    stdscr.getch()
+
+def main(stdscr):
     mm = Markmanager()
-    mm.input_student()
-    mm.input_courses()
+    # mm.input_student()
+    # mm.input_courses()
 
+    menu_items = [
+        "1: input student",
+        "2: input course",
+        "3: input mark of the course",
+        "4: show students",
+        "5: show courses",
+        "6: calculate student GPA ",
+        "7: Show all student GPA ",
+        "8: exit"
+    ]
+
+    curses.curs_set(0)
+    current_row = 0
+    selection= None
     while True:
-        mode= input("enter the action: ")
-        match mode:
-            case "1":
-                mm.input_student()
-            case "2":
-                mm.input_courses()
-            case "3":
-                mm.input_marks_for_course()
-            case "4":
-                mm.show_student()
-            case "5":
-                mm.show_course()
-            case "6" :
-                mm.calculate_GPA()
-            case "7" :
-                mm.show_list_GPA()
-            case "8"| "help":
-                mm.help()
-            case "9":
-                break
-            case _:
-                print("invalid action")
-                break
+        print_menu(stdscr, current_row, menu_items)
 
+        key = stdscr.getch()
+
+        if key== curses.KEY_UP and current_row >0:
+            current_row-=1
+        elif key == curses.KEY_DOWN and current_row<len(menu_items) - 1:
+            current_row+=1
+        elif key in (curses.KEY_ENTER, 10, 17):
+            selection = current_row
+        elif 49 <= key <= 48 + len(menu_items):   
+            selection = key - 49
+        
+        if selection is not None:
+            stdscr.addstr(0, 0, f"you chose: {menu_items[selection]}")
+            stdscr.clrtoeol()
+            stdscr.refresh()
+            stdscr.getch()
+
+        if selection == 0:
+            mm.input_student(stdscr)
+        elif selection == 1:
+            mm.input_courses(stdscr)
+        elif selection == 2:
+            mm.input_marks_for_course(stdscr)
+        elif selection == 3:
+            mm.show_student(stdscr)
+        elif selection == 4:
+            mm.show_course(stdscr)
+        elif selection == 5:
+            mm.calculate_GPA(stdscr)
+        elif selection == 6:
+            mm.show_list_GPA(stdscr)
+        elif selection == 7:
+            break
+        selection = None 
+
+        
+
+
+        
 if __name__ == '__main__':
-    main()
+    wrapper(main)
 
