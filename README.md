@@ -2,5 +2,5 @@
 
 - Your student ID: 2410315
 - Your name: Nguyen Minh Hoang 
-- Your class: TCD DD
+- Your class: ICT DD
 
