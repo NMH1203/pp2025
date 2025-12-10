@@ -1,7 +1,7 @@
 import curses
 from curses import wrapper
 
-from models import Student, Course, Markmanager
+from domain import Student, Course, Markmanager
 from input import get_input
 from output import show_message_box, print_menu
 
