@@ -1,7 +1,11 @@
-import math 
-import numpy as np
-import curses
+from input import get_input
+from output import print_menu, show_message_box
+
+import math
+import curses 
 from curses import wrapper
+import numpy as np
+
 class Student:
     def __init__(self, sid: int , name: str, dod: str):
         self._id = sid
@@ -67,6 +71,7 @@ class Course:
             return f"({self._id}, '{self._name}', {self._mark})"
         else:
             return f"({self._id}, '{self._name}')"
+
 
 class Markmanager:
     def __init__(self):
@@ -220,113 +225,3 @@ class Markmanager:
             line.append(str(c))
 
         show_message_box(stdscr, "LIST OF COURSES", line)
-
-
-def print_menu(stdscr, selected_row_idx, menu_items):
-    stdscr.clear()
-    h, w = stdscr.getmaxyx()
-
-    for idx, row in enumerate(menu_items):
-        x=w//2 - len(row)//2
-        y=h//2 - len (menu_items)//2 + idx
-
-        if idx == selected_row_idx:
-            stdscr.attron(curses.A_REVERSE)
-            stdscr.addstr(y,x , row)
-            stdscr.attroff(curses.A_REVERSE)
-        else:
-            stdscr.addstr(y, x, row)
-    stdscr.refresh()
-
-def get_input(stdscr, y, x, prompt):
-    curses.echo()
-    stdscr.addstr(y, x, prompt)
-    stdscr.refresh()
-
-
-    input_bytes= stdscr.getstr(y, x +len(prompt))
-
-    return input_bytes.decode('utf-8')
-
-def show_message_box (stdscr, title, lines):
-    stdscr.clear()
-    h, w = stdscr.getmaxyx()
-
-    stdscr.attron(curses.A_BOLD)
-    stdscr.addstr(0, 0, f"---{title}---")
-    stdscr.attron(curses.A_BOLD)
-
-    for i, line in enumerate(lines):
-        if i+2 <h:
-            stdscr.addstr(i+2, 0, str(line))
-    
-    msg = "Press any key to return"
-    stdscr.addstr(h-2, 0, msg, curses.A_REVERSE)
-    stdscr.refresh()
-    stdscr.getch()
-
-def main(stdscr):
-    stdscr.keypad(True)
-    mm = Markmanager()
-    # mm.input_student()
-    # mm.input_courses()
-
-    menu_items = [
-        "1: input student",
-        "2: input course",
-        "3: input mark of the course",
-        "4: show students",
-        "5: show courses",
-        "6: calculate student GPA ",
-        "7: Show all student GPA ",
-        "8: exit"
-    ]
-
-    curses.curs_set(0)
-    current_row = 0
-    selection= None
-    while True:
-        print_menu(stdscr, current_row, menu_items)
-
-        key = stdscr.getch()
-
-        if key== curses.KEY_UP and current_row >0:
-            current_row-=1
-        elif key == curses.KEY_DOWN and current_row<len(menu_items) - 1:
-            current_row+=1
-        elif key in (curses.KEY_ENTER, 10, 17):
-            selection = current_row
-        elif 49 <= key <= 48 + len(menu_items):   
-            selection = key - 49
-        
-        if selection is not None:
-            stdscr.addstr(0, 0, f"you chose: {menu_items[selection]}")
-            stdscr.clrtoeol()
-            stdscr.refresh()
-            stdscr.getch()
-
-        if selection == 0:
-            mm.input_student(stdscr)
-        elif selection == 1:
-            mm.input_courses(stdscr)
-        elif selection == 2:
-            mm.input_marks_for_course(stdscr)
-        elif selection == 3:
-            mm.show_student(stdscr)
-        elif selection == 4:
-            mm.show_course(stdscr)
-        elif selection == 5:
-            mm.calculate_GPA(stdscr)
-        elif selection == 6:
-            mm.show_list_GPA(stdscr)
-        elif selection == 7:
-            break
-        selection = None 
-
-        
-
-
-        
-if __name__ == '__main__':
-    wrapper(main)
-
