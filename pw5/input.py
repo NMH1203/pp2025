@@ -1,4 +1,5 @@
 import curses
+import os
 
 def get_input(stdscr, y, x, prompt):
     curses.echo()
@@ -9,3 +10,5 @@ def get_input(stdscr, y, x, prompt):
     input_bytes= stdscr.getstr(y, x +len(prompt))
 
     return input_bytes.decode('utf-8')
+
+

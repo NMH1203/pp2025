@@ -1,10 +1,11 @@
-101,Mathematics
-102,Physics
-103,Chemistry
-104,Biology
-105,English
-106,History
-107,Geography
-108,Computer Science
-109,Physical Education
-110,Art & Design
+ID|Tên|TinChi
+101|Mathematics|
+102|Physics|
+103|Chemistry|
+104|Biology|
+105|English|
+106|History|
+107|Geography|
+108|Computer Science|
+109|Physical Education|
+110|Art & Design|

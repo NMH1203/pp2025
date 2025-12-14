@@ -1,4 +1,5 @@
 import curses
+import os
 
 def print_menu(stdscr, selected_row_idx, menu_items):
     stdscr.clear()
@@ -32,3 +33,30 @@ def show_message_box (stdscr, title, lines):
     stdscr.addstr(h-2, 0, msg, curses.A_REVERSE)
     stdscr.refresh()
     stdscr.getch()
+
+def save_student_to_txt(students):
+    f = open("student.txt", "w", encoding="utf-8")
+
+    for s in students:
+        f.write(f"{s.id}|{s.name}|{s.dod} \n")
+
+    f.close()
+
+def save_course_to_txt(courses):
+    f = open("courses.txt","w",encoding="utf-8")
+
+    for c in courses:
+        f.write(f"{c.id}|{c.name}|{c.credits} \n")
+
+    f.close
+
+def save_mark_to_txt(students):
+    f= open("mark.txt","w", encoding="utf-8")
+
+    for s in students:
+        for course_name, score, credit in s.mark:
+            f.write(f"{course_name}|{s.id}|{score} \n")
+
+    f.close()
+
+
