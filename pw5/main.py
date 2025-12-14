@@ -2,16 +2,18 @@ import curses
 from curses import wrapper
 
 from domain import Student, Course, Markmanager
-from input import get_input
+from input import get_input, save_courses_to_file, save_marks_to_file, save_students_to_file
 from output import show_message_box, print_menu
+from utils.load import load_data
+from utils.compress import compress_data 
 
+students, courses = load_data()
 
 
 def main(stdscr):
     stdscr.keypad(True)
     mm = Markmanager()
-    # mm.input_student()
-    # mm.input_courses()
+    
 
     menu_items = [
         "1: input student",
