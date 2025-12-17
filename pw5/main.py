@@ -2,12 +2,27 @@ import curses
 from curses import wrapper
 
 from domain import Student, Course, Markmanager
-from input import get_input, save_courses_to_file, save_marks_to_file, save_students_to_file
-from output import show_message_box, print_menu
-from utils.load import load_data
+
+from input import (
+    get_input
+    )
+
+from output import (
+    show_message_box, 
+    print_menu, 
+    save_course_to_txt, 
+    save_mark_to_txt, 
+    save_student_to_txt
+    )
+
 from utils.compress import compress_data 
 
-students, courses = load_data()
+from utils.load import (
+    extract_all_data, 
+    load_data_course, 
+    load_data_student
+)
+
 
 
 def main(stdscr):
@@ -64,13 +79,15 @@ def main(stdscr):
         elif selection == 6:
             mm.show_list_GPA(stdscr)
         elif selection == 7:
+            save_student_to_txt(Student)
+            save_course_to_txt(Course)
+            save_mark_to_txt(Student)
+
+            compress_data()
             break
         selection = None 
-
         
-
-
-        
-if __name__ == '__main__':
+if __name__ == '__main__': 
+    extract_all_data()
     wrapper(main)
 

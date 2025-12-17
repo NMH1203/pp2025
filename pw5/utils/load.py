@@ -1,56 +1,86 @@
 import os
 import zipfile
-import tempfile
 
 from domain.models import Student 
 from domain.models import Course
+from domain.models import Markmanager
 
-def load_data():
+def extract_all_data():
+    info_dir = "info"
+
+    if os.path.exists("student.data"):
+        zipf = zipfile.ZipFile("student.data","r")
+        zipf.extractall(info_dir)
+
+        zipf.close()
+    
+
+def load_data_student():
 
     students = []
-    courses = []
+
+    info_dir = "info"
+    student_file = os.path.join(info_dir, "students.txt")
+    
+    if not os.path.exists("info/students.dat"):
+        return students
+    else: 
+        f= open(student_file, "r", encoding="utf-8")
+                
+        for line in f:    
+            parts = line.strip().split("|") 
+            if len(parts) == 3:
+                new_student = Student(int(parts[0]), parts[1], parts[2])
+                students.append(new_student)
+            
+        f.close()
+    
     marks = []
 
-    if not os.path.exists("students.dat"):
-        return students, courses, marks
+    info_dir = "info"
+    mark_file= os.path.join(info_dir, "marks.txt")
 
-    with tempfile.TemporaryDirectory() as temp_dir:
+    if not os.path.exists("info/marks.txt"):
+        return marks
+    else:
+        f = open(mark_file, "r", encoding="utf-8")
 
-        with zipfile.ZipFile("student.dat", "r") as zipf:
-            zipf.extractall(temp_dir)
+        for line in f:
+            parts = line.strip().split("|")
 
-        student_file = os.path.join(temp_dir, "students.txt")
+            if len(parts) == 4: 
+                marks.append((int(parts[0]), int(parts[1]), int(parts[2], int(parts[3]))))
 
-        if os.path.exists(student_file):
-            with open(student_file, "r", encoding="utf-8") as f:
-                
-                for line in f:    
-                    parts = line.strip().split("|") 
-                    if len(parts) == 3:
-                        new_student = Student(int(parts[0]), parts[1], parts[2])
-                        students.append(new_student)
+        f.close()
+    
+    student_dict = {s.id: s for s in students}
+
+    for course_id, tinchi, student_id, score in marks:
+        student = student_dict.get(student_id)
+
+        if student: 
+            student.add_mark(course_id, tinchi, score)
+
+    return students
+
+
+def load_data_course():
+    courses= []
+
+    info_dir = "info"
+    courses_file = os.path.join(info_dir, "courses.txt")
+
+    if not os.path.exists("info/courses.txt"):
+        return courses
+    else:
+        f = open(courses_file, "r", encoding="utf-8")
+
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) == 3:
+                new_course = Course(int(parts[0]), parts[1], int(parts[2]))
+                courses.append(new_course)
+
+    return courses
+    
         
-        course_file = os.path.join(temp_dir, "courses.txt")
-
-        if os.path.exists(course_file):
-            with open(course_file, "r", encoding="utf-8") as f :
-                
-                for line in f:
-                    parts = line.strip().split("|")
-                    if len(parts) == 3:
-                        new_course = Course(int(parts[0]), parts[1], int(parts[2]))
-                        courses.append(new_course)
-
-        mark_file= os.path.join(temp_dir, "marks.txt")
-
-        if os.path.exists(mark_file):
-            with open(mark_file, "r", encoding = "utf - 8" ) as f:
-
-                for line in f:
-                    parts = line.strip().split("|")
-                    if len(parts) ==3:
-                        marks.append({ int(parts[0]), int(parts[1]), float(parts[2])}) 
-
-        mark_file = os.path.join(temp_dir, "marks.txt")
-
-    return students, courses

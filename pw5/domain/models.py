@@ -6,6 +6,7 @@ import curses
 from curses import wrapper
 import numpy as np
 
+
 class Student:
     def __init__(self, sid: int , name: str, dod: str):
         self._id = sid
